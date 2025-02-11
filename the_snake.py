@@ -48,7 +48,7 @@ class GameObject:
         self.body_color = body_color
 
     def draw(self, screen: pygame.Surface) -> None:
-        """Метод отрисовки объекта (должен переопределяться в дочерних классах)."""
+        """Метод отрисовки объекта (переопределяется в дочерних классах)."""
         pass
 
 
