@@ -1,6 +1,6 @@
-import pygame
 import random
 
+import pygame
 
 # Константы
 SCREEN_WIDTH, SCREEN_HEIGHT = 640, 480
@@ -26,7 +26,7 @@ SPEED = 10
 
 pygame.init()
 screen = pygame.display.set_mode((SCREEN_WIDTH, SCREEN_HEIGHT))
-pygame.display.set_caption("Змейка")
+pygame.display.set_caption('Змейка')
 clock = pygame.time.Clock()
 font = pygame.font.Font(None, 36)
 
@@ -48,7 +48,7 @@ class GameObject:
         self.body_color = body_color
 
     def draw(self, screen: pygame.Surface) -> None:
-        """Метод отрисовки объекта (переопределяется в дочерних классах)."""
+        """Метод отрисовки объекта (должен переопределяться в дочерних классах)."""
         pass
 
 
@@ -181,12 +181,12 @@ def main() -> None:
             apple.draw(screen)
         else:
             draw_text(
-                "Игра окончена! Нажмите R для рестарта",
+                'Игра окончена! Нажмите R для рестарта',
                 (SCREEN_WIDTH // 6, SCREEN_HEIGHT // 2),
             )
 
         pygame.display.update()
 
 
-if __name__ == "__main__":
+if __name__ == '__main__':
     main()
