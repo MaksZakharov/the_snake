@@ -24,63 +24,71 @@ TEXT_COLOR = (255, 255, 255)
 # Скорость змейки
 SPEED = 10
 
-pygame.init()
+# Игровое окно
 screen = pygame.display.set_mode((SCREEN_WIDTH, SCREEN_HEIGHT))
-pygame.display.set_caption('Змейка')
+
+# Время
 clock = pygame.time.Clock()
-font = pygame.font.Font(None, 36)
 
+# Начальные позиции
+START_POSITION_SNAKE = (SCREEN_WIDTH // 2, SCREEN_HEIGHT // 2)
+DEFAULT_POSITION = (0, 0)
 
-def draw_text(text: str, position: tuple) -> None:
-    """Отображает текст на экране."""
-    text_surface = font.render(text, True, TEXT_COLOR)
-    screen.blit(text_surface, position)
+# Позиция текста "Игра окончена"
+GAME_OVER_POSITION = (SCREEN_WIDTH // 6, SCREEN_HEIGHT // 2)
 
 
 class GameObject:
     """Базовый класс для всех игровых объектов."""
 
     def __init__(
-        self, position: tuple = (0, 0), body_color: tuple = (255, 255, 255)
+        self, position: tuple = DEFAULT_POSITION,
+        body_color: tuple = TEXT_COLOR
     ):
         """Инициализирует объект с позицией и цветом."""
         self.position = position
         self.body_color = body_color
 
-    def draw(self, screen: pygame.Surface) -> None:
-        """Метод отрисовки объекта (переопределяется в дочерних классах)."""
-        pass
+    def draw(self) -> None:
+        """Метод отрисовки объекта (должен быть переопределён)."""
+        raise NotImplementedError
 
 
 class Apple(GameObject):
     """Представляет собой яблоко на игровом поле."""
 
-    def __init__(self):
-        """Создает яблоко в случайной позиции."""
-        super().__init__(self.randomize_position(), APPLE_COLOR)
+    def __init__(self, occupied_positions: set = None, color=APPLE_COLOR):
+        """Создает яблоко в случайной позиции, не попадая на змейку."""
+        if occupied_positions is None:
+            occupied_positions = set()
+        position = self.randomize_position(occupied_positions)
+        super().__init__(position, color)
 
-    def randomize_position(self) -> tuple:
-        """Генерирует случайную позицию яблока на игровом поле."""
-        return (
-            random.randint(0, GRID_WIDTH - 1) * GRID_SIZE,
-            random.randint(0, GRID_HEIGHT - 1) * GRID_SIZE,
-        )
+    def randomize_position(self, occupied_positions: set) -> tuple:
+        """Генерирует случайную позицию яблока.
+        Не попадает на занятые клетки.
+        """
+        while True:
+            new_position = (
+                random.randint(0, GRID_WIDTH - 1) * GRID_SIZE,
+                random.randint(0, GRID_HEIGHT - 1) * GRID_SIZE,
+            )
+            if new_position not in occupied_positions:
+                return new_position
 
-    def draw(self, screen: pygame.Surface) -> None:
+    def draw(self) -> None:
         """Отображает яблоко на экране."""
         pygame.draw.rect(
-            screen,
-            self.body_color,
-            (*self.position, GRID_SIZE, GRID_SIZE),
+            screen, self.body_color, (*self.position, GRID_SIZE, GRID_SIZE)
         )
 
 
 class Snake(GameObject):
     """Класс, управляющий поведением змейки в игре."""
 
-    def __init__(self):
+    def __init__(self, color=SNAKE_COLOR):
         """Инициализирует змейку в центре экрана."""
-        super().__init__((SCREEN_WIDTH // 2, SCREEN_HEIGHT // 2), SNAKE_COLOR)
+        super().__init__(START_POSITION_SNAKE, color)
         self.reset()
 
     def reset(self) -> None:
@@ -91,20 +99,16 @@ class Snake(GameObject):
         self.alive = True
 
     def move(self) -> None:
-        """Передвигает змейку и проверяет столкновение с самой собой."""
+        """Передвигает змейку в текущем направлении."""
         if not self.alive:
             return
 
-        head_x, head_y = self.positions[0]
+        head_x, head_y = self.get_head_position()
         dx, dy = self.direction
         new_head = (
             (head_x + dx * GRID_SIZE) % SCREEN_WIDTH,
             (head_y + dy * GRID_SIZE) % SCREEN_HEIGHT,
         )
-
-        if new_head in self.positions:
-            self.alive = False
-            return
 
         self.positions.insert(0, new_head)
         if not self.growing:
@@ -130,7 +134,7 @@ class Snake(GameObject):
         ):
             self.direction = new_direction
 
-    def draw(self, screen: pygame.Surface) -> None:
+    def draw(self) -> None:
         """Отображает змейку на экране."""
         for segment in self.positions:
             pygame.draw.rect(
@@ -163,9 +167,18 @@ def handle_keys(snake: Snake) -> None:
 
 
 def main() -> None:
-    """Основная функция игры."""
+    """Основная функция игры, запускает игровой цикл."""
+    pygame.init()
+    pygame.display.set_caption("Змейка")
+    font = pygame.font.Font(None, 36)
+
+    def draw_text(text: str, position: tuple) -> None:
+        """Отображает текст на экране."""
+        text_surface = font.render(text, True, TEXT_COLOR)
+        screen.blit(text_surface, position)
+
     snake = Snake()
-    apple = Apple()
+    apple = Apple(set(snake.positions))  # Передаём список занятых клеток
 
     while True:
         clock.tick(SPEED)
@@ -174,19 +187,26 @@ def main() -> None:
 
         if snake.alive:
             snake.move()
+
+            # Проверяем, не врезалась ли змейка в саму себя
+            if snake.get_head_position() in snake.positions[1:]:
+                snake.alive = False
+
+            # Проверяем, съела ли змейка яблоко
             if snake.get_head_position() == apple.position:
                 snake.grow()
-                apple.position = apple.randomize_position()
-            snake.draw(screen)
-            apple.draw(screen)
+                apple.position = apple.randomize_position(set(snake.positions))
+
+            snake.draw()
+            apple.draw()
         else:
             draw_text(
-                'Игра окончена! Нажмите R для рестарта',
-                (SCREEN_WIDTH // 6, SCREEN_HEIGHT // 2),
+                "Игра окончена! Нажмите R для рестарта",
+                GAME_OVER_POSITION,
             )
 
         pygame.display.update()
 
 
-if __name__ == '__main__':
+if __name__ == "__main__":
     main()
