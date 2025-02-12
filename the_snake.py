@@ -169,7 +169,7 @@ def handle_keys(snake: Snake) -> None:
 def main() -> None:
     """Основная функция игры, запускает игровой цикл."""
     pygame.init()
-    pygame.display.set_caption("Змейка")
+    pygame.display.set_caption('Змейка')
     font = pygame.font.Font(None, 36)
 
     def draw_text(text: str, position: tuple) -> None:
@@ -201,12 +201,12 @@ def main() -> None:
             apple.draw()
         else:
             draw_text(
-                "Игра окончена! Нажмите R для рестарта",
+                'Игра окончена! Нажмите R для рестарта',
                 GAME_OVER_POSITION,
             )
 
         pygame.display.update()
 
 
-if __name__ == "__main__":
+if __name__ == '__main__':
     main()
