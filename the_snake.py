@@ -62,20 +62,19 @@ class Apple(GameObject):
 
     def __init__(self, occupied_positions: set = None, color=APPLE_COLOR):
         """Создает яблоко в случайной позиции, не попадая на змейку."""
+        super().__init__(body_color=color)
         if occupied_positions is None:
             occupied_positions = set()
         self.randomize_position(occupied_positions)
-        super().__init__(body_color=color)
 
     def randomize_position(self, occupied_positions: set) -> tuple:
         """Генерирует случайную позицию яблока."""
         while True:
-            new_position = (
+            self.position = (
                 random.randint(0, GRID_WIDTH - 1) * GRID_SIZE,
                 random.randint(0, GRID_HEIGHT - 1) * GRID_SIZE,
             )
-            if new_position not in occupied_positions:
-                self.position = new_position
+            if self.position not in occupied_positions:
                 break
 
     def draw(self) -> None:
