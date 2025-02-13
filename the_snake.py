@@ -1,5 +1,4 @@
 import random
-
 import sys
 
 import pygame
@@ -54,7 +53,7 @@ class GameObject:
     def draw(self) -> None:
         """Метод отрисовки объекта (должен быть переопределён)."""
         raise NotImplementedError(
-            f"Метод draw() не переопределен в классе {self.__class__.__name__}"
+            f'Метод draw() не переопределен в классе {self.__class__.__name__}'
         )
 
 
@@ -153,7 +152,7 @@ def handle_keys(snake: Snake) -> None:
     for event in pygame.event.get():
         if event.type == pygame.QUIT:
             pygame.quit()
-            sys.exit("Пользователь закрыл окно.")
+            sys.exit('Пользователь закрыл окно.')
         elif event.type == pygame.KEYDOWN:
             if snake.alive:
                 if event.key == pygame.K_UP:
@@ -172,7 +171,7 @@ def handle_keys(snake: Snake) -> None:
 def main() -> None:
     """Основная функция игры, запускает игровой цикл."""
     pygame.init()
-    pygame.display.set_caption("Змейка")
+    pygame.display.set_caption('Змейка')
     font = pygame.font.Font(None, 36)
 
     def draw_text(text: str, position: tuple) -> None:
@@ -204,12 +203,12 @@ def main() -> None:
             apple.draw()
         else:
             draw_text(
-                "Игра окончена! Нажмите R для рестарта",
+                'Игра окончена! Нажмите R для рестарта',
                 GAME_OVER_POSITION,
             )
 
         pygame.display.update()
 
 
-if __name__ == "__main__":
+if __name__ == '__main__':
     main()
