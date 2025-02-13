@@ -1,5 +1,7 @@
 import random
 
+import sys
+
 import pygame
 
 # Константы
@@ -51,7 +53,9 @@ class GameObject:
 
     def draw(self) -> None:
         """Метод отрисовки объекта (должен быть переопределён)."""
-        raise NotImplementedError
+        raise NotImplementedError(
+            f"Метод draw() не переопределен в классе {self.__class__.__name__}"
+        )
 
 
 class Apple(GameObject):
@@ -61,20 +65,19 @@ class Apple(GameObject):
         """Создает яблоко в случайной позиции, не попадая на змейку."""
         if occupied_positions is None:
             occupied_positions = set()
-        position = self.randomize_position(occupied_positions)
-        super().__init__(position, color)
+        self.randomize_position(occupied_positions)
+        super().__init__(body_color=color)
 
     def randomize_position(self, occupied_positions: set) -> tuple:
-        """Генерирует случайную позицию яблока.
-        Не попадает на занятые клетки.
-        """
+        """Генерирует случайную позицию яблока."""
         while True:
             new_position = (
                 random.randint(0, GRID_WIDTH - 1) * GRID_SIZE,
                 random.randint(0, GRID_HEIGHT - 1) * GRID_SIZE,
             )
             if new_position not in occupied_positions:
-                return new_position
+                self.position = new_position
+                break
 
     def draw(self) -> None:
         """Отображает яблоко на экране."""
@@ -86,9 +89,9 @@ class Apple(GameObject):
 class Snake(GameObject):
     """Класс, управляющий поведением змейки в игре."""
 
-    def __init__(self, color=SNAKE_COLOR):
+    def __init__(self, position=START_POSITION_SNAKE, color=SNAKE_COLOR):
         """Инициализирует змейку в центре экрана."""
-        super().__init__(START_POSITION_SNAKE, color)
+        super().__init__(position, color)
         self.reset()
 
     def reset(self) -> None:
@@ -150,7 +153,7 @@ def handle_keys(snake: Snake) -> None:
     for event in pygame.event.get():
         if event.type == pygame.QUIT:
             pygame.quit()
-            exit()
+            sys.exit("Пользователь закрыл окно.")
         elif event.type == pygame.KEYDOWN:
             if snake.alive:
                 if event.key == pygame.K_UP:
@@ -169,7 +172,7 @@ def handle_keys(snake: Snake) -> None:
 def main() -> None:
     """Основная функция игры, запускает игровой цикл."""
     pygame.init()
-    pygame.display.set_caption('Змейка')
+    pygame.display.set_caption("Змейка")
     font = pygame.font.Font(None, 36)
 
     def draw_text(text: str, position: tuple) -> None:
@@ -189,24 +192,24 @@ def main() -> None:
             snake.move()
 
             # Проверяем, не врезалась ли змейка в саму себя
-            if snake.get_head_position() in snake.positions[1:]:
+            if snake.get_head_position() in snake.positions[4:]:
                 snake.alive = False
 
             # Проверяем, съела ли змейка яблоко
-            if snake.get_head_position() == apple.position:
+            elif snake.get_head_position() == apple.position:
                 snake.grow()
-                apple.position = apple.randomize_position(set(snake.positions))
+                apple.randomize_position(set(snake.positions))
 
             snake.draw()
             apple.draw()
         else:
             draw_text(
-                'Игра окончена! Нажмите R для рестарта',
+                "Игра окончена! Нажмите R для рестарта",
                 GAME_OVER_POSITION,
             )
 
         pygame.display.update()
 
 
-if __name__ == '__main__':
+if __name__ == "__main__":
     main()
