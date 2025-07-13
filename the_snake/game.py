@@ -5,10 +5,10 @@ import sys
 import pygame
 
 from the_snake.apple import Apple
-from the_snake.constants import (BOARD_BACKGROUND_COLOR, DOWN,
-                                 GAME_OVER_POSITION, HIGHSCORE_POSITION, LEFT,
-                                 RIGHT, SCORE_POSITION, SCREEN_HEIGHT,
-                                 SCREEN_WIDTH, SPEED, UP)
+from the_snake.constants import (BOARD_BACKGROUND_COLOR, DOWN, GRID_COLOR,
+                                 GRID_SIZE, HIGHSCORE_POSITION, LEFT, RIGHT,
+                                 SCORE_POSITION, SCREEN_HEIGHT, SCREEN_WIDTH,
+                                 SPEED, UP)
 from the_snake.snake import Snake
 from the_snake.utils import draw_text, load_high_score, save_high_score
 
@@ -70,6 +70,7 @@ class Game:
             self.clock.tick(self.speed)
             self.handle_keys()
             self.screen.fill(BOARD_BACKGROUND_COLOR)
+            draw_grid(self.screen)
 
             if self.snake.alive:
                 self.snake.move()
@@ -102,12 +103,25 @@ class Game:
                 )
 
             else:
-                draw_text(
-                    self.screen,
-                    "Игра окончена! Нажмите R для рестарта",
-                    GAME_OVER_POSITION,
-                    self.font,
-                    center=True
-                )
+                font_big = pygame.font.Font(None, 32)
+                lines = [
+                    "Игра окончена!",
+                    "Нажмите R для рестарта"
+                ]
+                for i, line in enumerate(lines):
+                    text_surface = font_big.render(line, True, (220, 20, 60))
+                    text_rect = text_surface.get_rect(center=(
+                        SCREEN_WIDTH // 2,
+                        SCREEN_HEIGHT // 2 + i * 40  # отступ между строками
+                    ))
+                    self.screen.blit(text_surface, text_rect)
 
             pygame.display.update()
+
+
+def draw_grid(screen):
+    """Рисует сетку на игровом поле."""
+    for x in range(0, SCREEN_WIDTH, GRID_SIZE):
+        pygame.draw.line(screen, GRID_COLOR, (x, 0), (x, SCREEN_HEIGHT))
+    for y in range(0, SCREEN_HEIGHT, GRID_SIZE):
+        pygame.draw.line(screen, GRID_COLOR, (0, y), (SCREEN_WIDTH, y))
