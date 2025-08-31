@@ -1,4 +1,4 @@
-from the_snake.main import main
+from the_snake.menu import show_menu
 
 if __name__ == "__main__":
-    main()
+    show_menu()
